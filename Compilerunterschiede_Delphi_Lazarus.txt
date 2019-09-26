@@ -1,0 +1,106 @@
+
+--------------------
+
+CompilerUnterschiede Delphi -> FPC
+
+--------------------
+
+include der share inc 
+{$i ..\..\share_settings.inc}  
+
+DelphiUnicode Modus für FPC
+http://wiki.freepascal.org/FPC_New_Features_3.0#New_delphiunicode_syntax_mode
+{$IFDEF FPC}{$MODE DelphiUnicode}{$ENDIF}  
+
+--------------------
+
+{$R *.dfm} is case sensitive!
+
+--------------------
+
+Uses unterschiedlich
+
+teilweise manuell anpassen, teilweise per suchen&ersetzen mit notepad++ 
+siehe unten
+
+--------------------
+
+Sourc-Dateiencoding 
+
+PAS ist UTF-8, Delphi scheint damit auch umgehen zu können.
+FPC stellt die Datei auf UTF8 ohne BOM um, Delphi fügt dann die UTF8 BOM hinzu.
+
+Daraus resultiert ein weiteres Problem
+http://wiki.freepascal.org/LCL_Unicode_Support/de#UTF8_und_Quelltextdateien_-_die_fehlende_BOM
+
+--------------------
+
+Im DFM gibt es auch ein Encodingproblem zur Entwurfszeit was sich aber nicht so einfach löst lässt,
+zur Laufzeit passt es glücklicherweise.
+Da ich die DFMs auf FPC Seite aber eh nicht bearbeiten darf, ist das kein großes Problem.
+
+--------------------
+
+Offset-Unterschied in den Masken 
+
+Der Offset Unterschied entsteht durch die Groupbox Komponente.
+Unter FPC Windows ist es ein fester Offset, unter Linux abhängig davon ob die Groupbox eine Caption hat.
+
+Die Lösung ist das Einbinden des FormHooks.
+{$IFDEF FPC}
+FormHook_unit,
+{$ENDIF}
+= class({$IFDEF FPC}TFormHook{$ELSE}TForm{$ENDIF})
+
+--------------------
+
+stream.readbuffer 
+
+bei dyn. erzeugten buffern (TBytes) aufpassen, ref auf erstes Byte übergeben
+
+--------------------
+
+Linux: 
+Alle Units Case Sensitive in der uses klausel angeben
+
+--------------------
+
+Linux:
+{$IFNDEF LINUX}Windows,{$ENDIF}
+{$IFDEF FPC}LCLIntf, LCLType, LMessages,{$ENDIF}
+
+mit Notepad++ Ersezen 
+{$IFNDEF LINUX}Windows,{$ENDIF}\r\n  {$IFDEF FPC}LCLIntf, LCLType, LMessages,{$ENDIF}\r\n  
+
+bzw um den FormHook gleich mit einzubinden 
+{$IFNDEF LINUX}Windows,{$ENDIF}\r\n  {$IFDEF FPC}FormHook_unit, LCLIntf, LCLType, LMessages,{$ENDIF}\r\n 
+
+--------------------
+
+Glyphs in BitBtns übernimmt er nicht richtig,
+entweder entfernen oder den buttonkind auf Lazarus Seite neu setzen
+
+--------------------
+
+Hardcoded delimiter sind natürlich genauso schlecht wie case insensitive ansprechen von Dateien.
+
+--------------------
+
+TPngImage in DFMs geht nicht weil Lazarus TPortableNetworkGraphic als Klasse hineinschreibt,
+hier muss eine extra klasse auf TPicture registriert werden.
+
+--------------------
+
+// Notizen/TODO
+
+- Zeromemory an relevanten stellen ersetzen
+	buffer
+	record?
+
+// shellexecute  ->  OpenDocument
+// Closehandle   ->  FileClose 
+// GefFileSize   ->  FileSize   
+
+
+
+
